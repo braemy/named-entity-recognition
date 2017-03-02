@@ -1,0 +1,79 @@
+def __init__(self, parser_type, language):
+	# define parser type, i.e. which parser to use
+	self.parser_type = parser_type
+	# define language to be used (language of the data set)
+	self.language = language
+	if self.parser_type == "spacy":
+		print("Loading spacy...")
+		self.nlp = spacy.load(self.language)
+		print("Spacy loaded")
+	elif self.parser_type == "stanford":
+		# path to Stanford parsing files
+		stanford_parsing_path = "../stanford_parsing/"
+		# path for NER jar
+		stanford_ner_path = stanford_parsing_path + "stanford-ner.jar"
+		# initialize model_filename based on the language of the data set
+		if self.language == "en":
+			model_filename = stanford_parsing_path + "english.all.3class.distsim.crf.ser.gz"
+		else:
+			# load the German model_filename
+			# model_filename = stanford_parsing_path + 
+			print("Only English is supported at the moment")
+			sys.exit()
+		# initialize the NER tagger
+		self.ner_tagger = StanfordNERTagger(model_filename, stanford_ner_path)
+		# path for jars for dependency parsing
+		path_to_jar = stanford_parsing_path + "stanford-parser.jar"
+		path_to_models_jar = stanford_parsing_path + "stanford-parser-3.7.0-models.jar"
+		# initialize the dependency parser
+		self.dependency_parser = StanfordDependencyParser(path_to_jar=path_to_jar, path_to_models_jar=path_to_models_jar)
+	elif self.parser_type == "syntaxnet":
+		if self.language != "en":
+			print("Only English is supported at the moment")
+			sys.exit()
+		# load all sentences of the data set
+		self.sentences = self.__load_sentences()
+		# build a dictionary: 
+		# key = sentence 
+		# value = relational information extracted from syntaxnet for a particular sentence
+		self.relational_analysis_dict = self.__build_relational_analysis_mapping()
+		# check if all sentences are contained as keys in the dictionary
+		assert len(self.relational_analysis_dict.keys()) == len(self.sentences), "sentences and relational_analysis_dict should have the same length (data set may contain duplicate sentences)"
+	else:
+		raise Exception("Unsupported parser type {0}".format(self.parser_type))
+
+
+## added on 08.02.2017
+def __relational_features_analysis_stanford(self, word_sequence):
+	"""
+	Takes a list of words that represents a sentence and performs relational feature analysis using the Stanford parser.
+	Information about the arc label, the arc head and the entity id of each word is extracted
+	
+	@type word_sequence: list
+	@param word_sequence: sequence of words
+	@return: a list of lists with relational features. The position in the list corresponds to the position
+	of the word in the sentence. The inner list contains the relational information about each word
+	"""
+
+	# name entity recognition
+	entity_features = self.ner_tagger.tag(word_sequence)
+	# dependecy parsing of the word_sequence
+	stanford_dependencies = self.dependency_parser.parse_all(word_sequence)
+	# convert to string representation
+	stanford_dependencies = str(stanford_dependencies[0].to_dot())
+	# build the mapping
+	arcs_dict, words_dict = self.__build_parser_mapping(stanford_dependencies)
+	# initialize relational_analysis list
+	relational_analysis = []
+	# iterate through result and build the relational_analysis list
+	for idx, entity_feature in enumerate(entity_features):
+		# extract arc label
+		arc_label = [arcs_dict[key] for key in arcs_dict.keys() if key.split()[-1] == str(idx + 1)][0]
+		# extract arc head
+		arc_head = [int(key.split('->')[0]) for key in arcs_dict.keys() if key.split()[-1] == str(idx + 1)][0]
+		arc_head = entity_feature[0] if words_dict[arc_head] == 'None' else words_dict[arc_head]
+		# the position in the list indicates the position of the word in the sentence
+		# relational information is given in the following way
+		# ['label of incoming arc' | 'token at the source of the arc' | 'entity type']
+		relational_analysis.append([arc_label, arc_head, entity_feature[1]])
+	return relational_analysis
