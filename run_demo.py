@@ -41,16 +41,19 @@ def detect_language(sentence):
 
 def main(args):
     sentence = args.sentence
+    sentence = sentence.strip('"')
+    print(sentence)
     language = detect_language(sentence)
-    input_path = "server_test_data.txt"
-    output_path = "predictions.txt"
-    model_path = "model_path_wikiner_" + args.model
+    input_path = config.paths['ner'] +"server_test_data.txt"
+    output_path = config.paths['ner'] +"predictions.txt"
+    model_path = "model_path_wikiner" + ("_embedding_" + str(50) if args.model == "embedding" else "")
     prediction_path = "predictions"
     program = config.paths['ner'] + "main.py"
 
     parse_input(sentence, input_path)
     command = "python " + program + " --data_path " + input_path + " --model_path " + model_path + " --prediction_path " \
-              + prediction_path + " --project_dir " + config.paths['ner']+" --language " + language + " > /dev/null"
+              + prediction_path + " --project_dir " + config.paths['ner']+" --language " + language + " > /dev/null"  # TODO CHANGE HARD CODING LANGUAGE => put language
+    print(command)
     os.system(command)
 
 

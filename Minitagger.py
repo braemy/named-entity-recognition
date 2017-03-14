@@ -66,15 +66,15 @@ class Minitagger(object):
 
         self.__feature_extractor = feature_extractor
 
-    def set_prediction_path(self, prediction_path):
+    def set_prediction_path(self, prediction_path, embedding_size=None):
         assert self.language != "", "you must set the language before using this function"
-        self.prediction_path = os.path.join(self.project_dir, "predictions", self.language, prediction_path)
+        self.prediction_path = os.path.join(self.project_dir, "predictions", self.language, prediction_path+ ("_"+str(embedding_size) if embedding_size else ""))
         if not os.path.isdir(self.prediction_path):
             os.mkdir(self.prediction_path)
 
-    def set_model_path(self, model_path):
+    def set_model_path(self, model_path, embedding_size):
         assert self.language != "", "you must set the language before using this function"
-        self.model_path = os.path.join(self.project_dir, "models_path", self.language, model_path)
+        self.model_path = os.path.join(self.project_dir, "models_path", self.language, model_path + ("_"+str(embedding_size) if embedding_size else ""))
         if not os.path.isdir(self.model_path):
             os.mkdir(self.model_path)
 
@@ -123,7 +123,7 @@ class Minitagger(object):
 
             self.__save_prediction_to_file(data_test, pred_labels)
             f1score, precision, recall = report_fscore(self.prediction_path + "/predictions.txt", wikiner=self.wikiner)
-
+            print("Accuracy: ", acc)
             # create some files useful for debugging
             if self.debug:
                 self.__debug(data_test, pred_labels)
@@ -245,15 +245,6 @@ class Minitagger(object):
 		@type model_path: str
 		@param model_path: path to save the trained model
 		"""
-        # model_path = os.path.join("models_path", model_path)
-        # remove model_path if it already exists
-        # if os.path.exists(model_path):
-        #    subprocess.check_output(["rm", "-rf", model_path])
-
-        # make model_path directory
-        # os.makedirs(model_path)
-        self.set_model_path(model_path)
-        # save feature extractor in the model_path directory
         ## if-else statement added on 06.02.2017
         if (self.__feature_extractor.feature_template == "relational") and (
                     self.__feature_extractor.parser_type == "spacy"):
@@ -336,14 +327,13 @@ class Minitagger(object):
         # 	self.__feature_extractor = pickle.load(open(os.path.join(model_path, "feature_extractor"), "rb"))
         # 	# load trained model
         # 	self.__liblinear_model = liblinearutil.load_model(os.path.join(model_path, "liblinear_model"))
-        self.set_model_path(model_path)
         try:
             print(self.model_path)
             self.__feature_extractor = pickle.load(open(os.path.join(self.model_path, "feature_extractor"), "rb"))
             # load trained model
             self.__liblinear_model = liblinearutil.load_model(os.path.join(self.model_path, "liblinear_model"))
         except:
-            raise Exception("No files found in the model path")
+            raise Exception("No files found in the model path " + self.model_path)
 
     def predict(self, data_test):
         """

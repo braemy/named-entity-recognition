@@ -3,6 +3,8 @@ import pickle
 import numpy as np
 from utils import *
 from RelationalFeatureAnalyzer import RelationalFeatureAnalyzer
+import sys
+import os
 
 
 class SequenceDataFeatureExtractor(object):
@@ -240,33 +242,22 @@ class SequenceDataFeatureExtractor(object):
                     numeric_features[self.__map_feature_str2num[raw_feature]] = raw_features[raw_feature]
         return numeric_features
 
-    def load_word_embeddings(self, embedding_path):
+    def load_word_embeddings(self, embedding_path, embedding_length):
         """
-		Loads word embeddings from a file in the given path
+        Loads word embeddings from a file in the given path
 
-		@type embedding_path: str
-		@param embedding_path: path to the file containing the word embeddings
-		"""
+        @type embedding_path: str
+        @param embedding_path: path to the file containing the word embeddings
+        """
 
         # load the word embeddings dictionary
-        self.__word_embeddings = pickle.load(open(embedding_path, "rb"))
-
-        # self.__word_embeddings = {}
-        # with open(embedding_path, "r") as input_file:
-        # 	for line in input_file:
-        # 		tokens = line.split()
-        # 		# empty line
-        # 		if len(tokens) == 0:
-        # 			continue
-        # 		# the lines in the embeddings file look like
-        # 		# tokens = [count] [type] [value_1] ... [value_m]
-        # 		self.__word_embeddings[tokens[1]] = np.array([float(token) for token in tokens[2:]])
-        # 		# normalize word embeddings
-        # 		self.__word_embeddings[tokens[1]] /= np.linalg.norm(self.__word_embeddings[tokens[1]])
-
+        print("Loading word embeddings...")
+        file_name = "word_embeddings_" + str(embedding_length) + ".p"
+        file_name = os.path.join(embedding_path, file_name)
+        self.__word_embeddings = pickle.load(open(file_name, "rb"))
         # the token for unknown word types must be present
         assert (
-            self.unknown_symbol in self.__word_embeddings), "The token for unknown word types must be present in the embeddings file"
+        self.unknown_symbol in self.__word_embeddings), "The token for unknown word types must be present in the embeddings file"
 
         # address some treebank token conventions.
         if "(" in self.__word_embeddings:
@@ -344,12 +335,13 @@ class SequenceDataFeatureExtractor(object):
             features["is_capitalized({0})={1}".format(relative_position, is_capitalized(word))] = 1
             # build suffixes and preffixes for each word (up to a length of 4)
             for length in range(1, 5):
-                features["prefix{0}({1})={2}".format(length, relative_position, get_prefix(word, length))] = 1
-                features["suffix{0}({1})={2}".format(length, relative_position, get_suffix(word, length))] = 1
+                a = 1
+        #        features["prefix{0}({1})={2}".format(length, relative_position, get_prefix(word, length))] = 1
+        #        features["suffix{0}({1})={2}".format(length, relative_position, get_suffix(word, length))] = 1
             # check if all chars are nonalphanumeric
-            features["is_all_nonalphanumeric({0})={1}".format(relative_position, is_all_nonalphanumeric(word))] = 1
+        #    features["is_all_nonalphanumeric({0})={1}".format(relative_position, is_all_nonalphanumeric(word))] = 1
             # check if word can be converted to float, i.e. word is a number
-            features["is_float({0})={1}".format(relative_position, is_float(word))] = 1
+        #    features["is_float({0})={1}".format(relative_position, is_float(word))] = 1
             self.spelling_feature_cache[(word, relative_position)] = features
 
         # Return a copy so that modifying that object doesn't modify the cache.
@@ -380,10 +372,10 @@ class SequenceDataFeatureExtractor(object):
         # extract spelling features
         features = self.__spelling_features(word, 0)
         # add features for the words on the left and right side
-        features["word(-1)={0}".format(word_left1)] = 1
-        features["word(-2)={0}".format(word_left2)] = 1
-        features["word(+1)={0}".format(word_right1)] = 1
-        features["word(+2)={0}".format(word_right2)] = 1
+    #    features["word(-1)={0}".format(word_left1)] = 1
+    #    features["word(-2)={0}".format(word_left2)] = 1
+    #    features["word(+1)={0}".format(word_right1)] = 1
+    #    features["word(+2)={0}".format(word_right2)] = 1
         return features
 
     def __get_pos_features(self, word_sequence, position, pos_tag):
@@ -442,7 +434,6 @@ class SequenceDataFeatureExtractor(object):
         # enrich given features dict
         for i, value in enumerate(word_embedding):
             features["embedding({0})_at({1})".format(offset, (i + 1))] = value
-
 
     def __get_embedding_features(self, word_sequence, position):
         """

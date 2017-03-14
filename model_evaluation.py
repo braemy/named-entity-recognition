@@ -268,9 +268,9 @@ def build_data_sequence(file_name):
 
     return data_sequence
 
-
 def report_fscore(predictions_file, wikiner=False):
     data_sequence = build_data_sequence(predictions_file)
+
 
     tp_exact = 0
     tn_exact = 0

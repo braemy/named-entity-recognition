@@ -28,7 +28,8 @@ def main(args):
 
     minitagger.language = args.language
 
-    minitagger.set_prediction_path(args.prediction_path)
+    minitagger.set_prediction_path(args.prediction_path, args.embedding_size if args.embedding_size else None)
+    minitagger.set_model_path(args.model_path, args.embedding_size if args.embedding_size else None)
 
     if args.wikiner:
         minitagger.wikiner = True
@@ -42,7 +43,7 @@ def main(args):
                                                          args.enable_embeddings)
         # load bitstring or embeddings data
         if args.embedding_path:
-            feature_extractor.load_word_embeddings(args.embedding_path)
+            feature_extractor.load_word_embeddings(args.embedding_path, args.embedding_size)
         if args.bitstring_path:
             feature_extractor.load_word_bitstrings(args.bitstring_path)
         # equip Minitagger with the appropriate feature extractor
@@ -105,7 +106,10 @@ if __name__ == "__main__":
     argparser.add_argument("--train", action="store_true", help="train the tagger on the given data")
     argparser.add_argument("--feature_template", type=str, default="baseline",
                            help="feature template (default: %(default)s)")
-    argparser.add_argument("--embedding_path", type=str, help="path to word embeddings")
+    argparser.add_argument("--embedding_path", type=str, help="path the folder containing word embeddings")
+    argparser.add_argument("--embedding_size", type=int, choices=[50, 100, 200,300],
+                           help="the size of the word embedding vectors")
+
     argparser.add_argument("--bitstring_path", type=str,
                            help="path to word bit strings (from a hierarchy of word types)")
     argparser.add_argument("--quiet", action="store_true", help="no messages")
