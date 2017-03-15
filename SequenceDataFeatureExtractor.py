@@ -336,12 +336,12 @@ class SequenceDataFeatureExtractor(object):
             # build suffixes and preffixes for each word (up to a length of 4)
             for length in range(1, 5):
                 a = 1
-        #        features["prefix{0}({1})={2}".format(length, relative_position, get_prefix(word, length))] = 1
-        #        features["suffix{0}({1})={2}".format(length, relative_position, get_suffix(word, length))] = 1
+                features["prefix{0}({1})={2}".format(length, relative_position, get_prefix(word, length))] = 1
+                features["suffix{0}({1})={2}".format(length, relative_position, get_suffix(word, length))] = 1
             # check if all chars are nonalphanumeric
-        #    features["is_all_nonalphanumeric({0})={1}".format(relative_position, is_all_nonalphanumeric(word))] = 1
+            features["is_all_nonalphanumeric({0})={1}".format(relative_position, is_all_nonalphanumeric(word))] = 1
             # check if word can be converted to float, i.e. word is a number
-        #    features["is_float({0})={1}".format(relative_position, is_float(word))] = 1
+            features["is_float({0})={1}".format(relative_position, is_float(word))] = 1
             self.spelling_feature_cache[(word, relative_position)] = features
 
         # Return a copy so that modifying that object doesn't modify the cache.
@@ -372,10 +372,10 @@ class SequenceDataFeatureExtractor(object):
         # extract spelling features
         features = self.__spelling_features(word, 0)
         # add features for the words on the left and right side
-    #    features["word(-1)={0}".format(word_left1)] = 1
-    #    features["word(-2)={0}".format(word_left2)] = 1
-    #    features["word(+1)={0}".format(word_right1)] = 1
-    #    features["word(+2)={0}".format(word_right2)] = 1
+        features["word(-1)={0}".format(word_left1)] = 1
+        features["word(-2)={0}".format(word_left2)] = 1
+        features["word(+1)={0}".format(word_right1)] = 1
+        features["word(+2)={0}".format(word_right2)] = 1
         return features
 
     def __get_pos_features(self, word_sequence, position, pos_tag):

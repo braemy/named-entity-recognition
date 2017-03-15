@@ -100,7 +100,7 @@ def main(args):
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
     argparser.add_argument("--data_path", type=str, help="path to data (used for training/testing)", required=True)
-    argparser.add_argument("--analyze", action="store_true", help="Analyze given data and return")
+
     argparser.add_argument("--model_path", type=str, help="path to model directory", required=True)
     argparser.add_argument("--prediction_path", type=str, help="path to output data for prediction")
     argparser.add_argument("--train", action="store_true", help="train the tagger on the given data")
@@ -110,8 +110,6 @@ if __name__ == "__main__":
     argparser.add_argument("--embedding_size", type=int, choices=[50, 100, 200,300],
                            help="the size of the word embedding vectors")
 
-    argparser.add_argument("--bitstring_path", type=str,
-                           help="path to word bit strings (from a hierarchy of word types)")
     argparser.add_argument("--quiet", action="store_true", help="no messages")
     argparser.add_argument("--test_data_path", type=str, help="path to test data set (used for training)")
     argparser.add_argument("--active", action="store_true", help="perform active learning on the given data")
